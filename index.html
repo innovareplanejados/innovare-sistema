@@ -4,87 +4,85 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Innovare Fase 4</title>
+<title>Innovare Fase 5</title>
 </head>
 
-<body style="margin:0;background:#000;color:#fff;font-family:Arial;padding:20px">
+<body style="margin:0;background:#050505;color:#fff;font-family:Arial;padding:20px">
 
-<h1 style="color:#D4AF37">Innovare Planejados</h1>
-<p>Sistema Profissional</p>
+<h1 style="color:#D4AF37;font-size:34px">Innovare Planejados</h1>
+<p style="color:#bbb">Empresarial Luxo</p>
 
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px;margin-top:20px">
 
-<button onclick="novoCliente()" style="padding:16px;background:#D4AF37;border:none;border-radius:12px">👥 Cliente</button>
+<div style="background:#111;padding:20px;border-radius:16px">
+<h3>💰 Faturamento</h3>
+<p>R$ 24.800</p>
+</div>
 
-<button onclick="novaEntrada()" style="padding:16px;background:#111;color:#fff;border:none;border-radius:12px">💰 Entrada</button>
+<div style="background:#111;padding:20px;border-radius:16px">
+<h3>📈 Lucro</h3>
+<p>R$ 11.300</p>
+</div>
 
-<button onclick="novaSaida()" style="padding:16px;background:#111;color:#fff;border:none;border-radius:12px">💸 Saída</button>
+<div style="background:#111;padding:20px;border-radius:16px">
+<h3>👥 Clientes</h3>
+<p>14 ativos</p>
+</div>
 
-<button onclick="novoOrc()" style="padding:16px;background:#111;color:#fff;border:none;border-radius:12px">🧾 Orçamento</button>
+<div style="background:#111;padding:20px;border-radius:16px">
+<h3>📅 Agenda</h3>
+<p>4 compromissos</p>
+</div>
 
 </div>
 
-<div style="background:#111;padding:20px;border-radius:15px;margin-top:20px">
-<h2>Saldo</h2>
-<p id="saldo"></p>
+<div style="margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+
+<button onclick="novoCliente()" style="padding:16px;background:#D4AF37;border:none;border-radius:12px;font-size:16px">👥 Novo Cliente</button>
+
+<button onclick="novaConta()" style="padding:16px;background:#111;color:#fff;border:none;border-radius:12px;font-size:16px">💸 Conta Pagar</button>
+
+<button onclick="novoOrc()" style="padding:16px;background:#111;color:#fff;border:none;border-radius:12px;font-size:16px">🧾 Orçamento</button>
+
+<button onclick="abrirZap()" style="padding:16px;background:#111;color:#fff;border:none;border-radius:12px;font-size:16px">📲 WhatsApp</button>
+
 </div>
 
-<div style="background:#111;padding:20px;border-radius:15px;margin-top:20px">
-<h2>Clientes</h2>
-<div id="clientes"></div>
-</div>
-
-<div style="background:#111;padding:20px;border-radius:15px;margin-top:20px">
+<div style="background:#111;padding:20px;border-radius:16px;margin-top:20px">
 <h2>Histórico</h2>
-<div id="historico"></div>
+<div id="lista"></div>
 </div>
 
 <script>
-let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
-let saldo = Number(localStorage.getItem('saldo')) || 0;
-let historico = JSON.parse(localStorage.getItem('historico')) || [];
+let hist = JSON.parse(localStorage.getItem('hist')) || [];
 
 function salvar(){
-localStorage.setItem('clientes',JSON.stringify(clientes));
-localStorage.setItem('saldo',saldo);
-localStorage.setItem('historico',JSON.stringify(historico));
+localStorage.setItem('hist',JSON.stringify(hist));
 }
 
 function render(){
-document.getElementById('saldo').innerText='R$ '+saldo.toFixed(2);
-
-document.getElementById('clientes').innerHTML=
-clientes.map((c,i)=>'<p>'+c+' <button onclick=\"delCliente('+i+')\">❌</button></p>').join('');
-
-document.getElementById('historico').innerHTML=
-historico.map(h=>'<p>'+h+'</p>').join('');
-
+document.getElementById('lista').innerHTML =
+hist.map(i=>'<p>'+i+'</p>').join('');
 salvar();
 }
 
 function novoCliente(){
 let n=prompt('Nome cliente');
-if(n){clientes.push(n);historico.unshift('Cliente: '+n);render();}
+if(n){hist.unshift('👥 Cliente: '+n);render();}
 }
 
-function delCliente(i){
-clientes.splice(i,1);
-render();
-}
-
-function novaEntrada(){
-let v=Number(prompt('Valor entrada'));
-if(v){saldo+=v;historico.unshift('Entrada R$ '+v);render();}
-}
-
-function novaSaida(){
-let v=Number(prompt('Valor saída'));
-if(v){saldo-=v;historico.unshift('Saída R$ '+v);render();}
+function novaConta(){
+let n=prompt('Conta a pagar');
+if(n){hist.unshift('💸 Conta: '+n);render();}
 }
 
 function novoOrc(){
 let n=prompt('Nome orçamento');
-if(n){historico.unshift('Orçamento: '+n);render();}
+if(n){hist.unshift('🧾 Orçamento: '+n);render();}
+}
+
+function abrirZap(){
+window.open('https://wa.me/55','_blank');
 }
 
 render();
