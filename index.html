@@ -1,50 +1,53 @@
-
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Innovare Fase 5</title>
+<title>Innovare Fase 6</title>
 </head>
 
 <body style="margin:0;background:#050505;color:#fff;font-family:Arial;padding:20px">
 
 <h1 style="color:#D4AF37;font-size:34px">Innovare Planejados</h1>
-<p style="color:#bbb">Empresarial Luxo</p>
+<p style="color:#bbb">Fase 6 • Automação Total</p>
 
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px;margin-top:20px">
 
 <div style="background:#111;padding:20px;border-radius:16px">
-<h3>💰 Faturamento</h3>
-<p>R$ 24.800</p>
-</div>
-
-<div style="background:#111;padding:20px;border-radius:16px">
-<h3>📈 Lucro</h3>
-<p>R$ 11.300</p>
-</div>
-
-<div style="background:#111;padding:20px;border-radius:16px">
-<h3>👥 Clientes</h3>
-<p>14 ativos</p>
+<h3>💰 Caixa</h3>
+<p id="saldo">R$ 0,00</p>
 </div>
 
 <div style="background:#111;padding:20px;border-radius:16px">
 <h3>📅 Agenda</h3>
-<p>4 compromissos</p>
+<p id="qtdAgenda">0 compromissos</p>
+</div>
+
+<div style="background:#111;padding:20px;border-radius:16px">
+<h3>🧾 Orçamentos</h3>
+<p id="qtdOrc">0 criados</p>
+</div>
+
+<div style="background:#111;padding:20px;border-radius:16px">
+<h3>⚠️ Contas</h3>
+<p id="qtdContas">0 pendentes</p>
 </div>
 
 </div>
 
 <div style="margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
 
-<button onclick="novoCliente()" style="padding:16px;background:#D4AF37;border:none;border-radius:12px;font-size:16px">👥 Novo Cliente</button>
+<button onclick="entrada()" style="padding:16px;background:#D4AF37;border:none;border-radius:12px">💰 Entrada</button>
 
-<button onclick="novaConta()" style="padding:16px;background:#111;color:#fff;border:none;border-radius:12px;font-size:16px">💸 Conta Pagar</button>
+<button onclick="saida()" style="padding:16px;background:#111;color:#fff;border:none;border-radius:12px">💸 Saída</button>
 
-<button onclick="novoOrc()" style="padding:16px;background:#111;color:#fff;border:none;border-radius:12px;font-size:16px">🧾 Orçamento</button>
+<button onclick="orcamento()" style="padding:16px;background:#111;color:#fff;border:none;border-radius:12px">🧾 Novo Orçamento</button>
 
-<button onclick="abrirZap()" style="padding:16px;background:#111;color:#fff;border:none;border-radius:12px;font-size:16px">📲 WhatsApp</button>
+<button onclick="agenda()" style="padding:16px;background:#111;color:#fff;border:none;border-radius:12px">📅 Agendar</button>
+
+<button onclick="cobranca()" style="padding:16px;background:#111;color:#fff;border:none;border-radius:12px">📲 Cobrança WhatsApp</button>
+
+<button onclick="conta()" style="padding:16px;background:#111;color:#fff;border:none;border-radius:12px">⚠️ Conta a Pagar</button>
 
 </div>
 
@@ -54,35 +57,62 @@
 </div>
 
 <script>
-let hist = JSON.parse(localStorage.getItem('hist')) || [];
+let saldo = Number(localStorage.getItem('saldo6')) || 0;
+let hist = JSON.parse(localStorage.getItem('hist6')) || [];
+let ag = Number(localStorage.getItem('ag6')) || 0;
+let orc = Number(localStorage.getItem('orc6')) || 0;
+let cont = Number(localStorage.getItem('cont6')) || 0;
 
 function salvar(){
-localStorage.setItem('hist',JSON.stringify(hist));
+localStorage.setItem('saldo6',saldo);
+localStorage.setItem('hist6',JSON.stringify(hist));
+localStorage.setItem('ag6',ag);
+localStorage.setItem('orc6',orc);
+localStorage.setItem('cont6',cont);
+}
+
+function moeda(v){
+return 'R$ '+v.toFixed(2).replace('.',',');
 }
 
 function render(){
-document.getElementById('lista').innerHTML =
-hist.map(i=>'<p>'+i+'</p>').join('');
+document.getElementById('saldo').innerText = moeda(saldo);
+document.getElementById('qtdAgenda').innerText = ag+' compromissos';
+document.getElementById('qtdOrc').innerText = orc+' criados';
+document.getElementById('qtdContas').innerText = cont+' pendentes';
+document.getElementById('lista').innerHTML = hist.map(i=>'<p>'+i+'</p>').join('');
 salvar();
 }
 
-function novoCliente(){
-let n=prompt('Nome cliente');
-if(n){hist.unshift('👥 Cliente: '+n);render();}
+function entrada(){
+let v = Number(prompt('Valor da entrada'));
+if(v){saldo+=v;hist.unshift('💰 Entrada '+moeda(v));render();}
 }
 
-function novaConta(){
-let n=prompt('Conta a pagar');
-if(n){hist.unshift('💸 Conta: '+n);render();}
+function saida(){
+let v = Number(prompt('Valor da saída'));
+if(v){saldo-=v;hist.unshift('💸 Saída '+moeda(v));render();}
 }
 
-function novoOrc(){
-let n=prompt('Nome orçamento');
-if(n){hist.unshift('🧾 Orçamento: '+n);render();}
+function orcamento(){
+let nome = prompt('Nome do cliente');
+let v = prompt('Valor orçamento');
+if(nome){orc++;hist.unshift('🧾 Orçamento '+nome+' '+moeda(Number(v||0)));render();}
 }
 
-function abrirZap(){
-window.open('https://wa.me/55','_blank');
+function agenda(){
+let t = prompt('Compromisso');
+if(t){ag++;hist.unshift('📅 '+t);render();}
+}
+
+function conta(){
+let t = prompt('Conta a pagar');
+if(t){cont++;hist.unshift('⚠️ '+t);render();}
+}
+
+function cobranca(){
+let msg = encodeURIComponent('Olá, passando para lembrar do pagamento pendente. Innovare Planejados.');
+window.open('https://wa.me/55?text='+msg,'_blank');
 }
 
 render();
