@@ -1,23 +1,33 @@
+
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Innovare Fase 3</title>
+<title>Innovare Fase 4</title>
 </head>
 
 <body style="margin:0;background:#000;color:#fff;font-family:Arial;padding:20px">
 
 <h1 style="color:#D4AF37">Innovare Planejados</h1>
-<p>Sistema Premium Real</p>
+<p>Sistema Profissional</p>
 
-<button onclick="addCliente()" style="width:100%;padding:18px;font-size:18px;background:#D4AF37;border:none;border-radius:15px;margin-top:15px">
-➕ Adicionar Cliente
-</button>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
 
-<button onclick="addEntrada()" style="width:100%;padding:18px;font-size:18px;background:#111;color:#fff;border:none;border-radius:15px;margin-top:10px">
-💰 Nova Entrada
-</button>
+<button onclick="novoCliente()" style="padding:16px;background:#D4AF37;border:none;border-radius:12px">👥 Cliente</button>
+
+<button onclick="novaEntrada()" style="padding:16px;background:#111;color:#fff;border:none;border-radius:12px">💰 Entrada</button>
+
+<button onclick="novaSaida()" style="padding:16px;background:#111;color:#fff;border:none;border-radius:12px">💸 Saída</button>
+
+<button onclick="novoOrc()" style="padding:16px;background:#111;color:#fff;border:none;border-radius:12px">🧾 Orçamento</button>
+
+</div>
+
+<div style="background:#111;padding:20px;border-radius:15px;margin-top:20px">
+<h2>Saldo</h2>
+<p id="saldo"></p>
+</div>
 
 <div style="background:#111;padding:20px;border-radius:15px;margin-top:20px">
 <h2>Clientes</h2>
@@ -25,30 +35,56 @@
 </div>
 
 <div style="background:#111;padding:20px;border-radius:15px;margin-top:20px">
-<h2>Financeiro</h2>
-<p id="saldo">Saldo: R$ 0</p>
+<h2>Histórico</h2>
+<div id="historico"></div>
 </div>
 
 <script>
 let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
 let saldo = Number(localStorage.getItem('saldo')) || 0;
+let historico = JSON.parse(localStorage.getItem('historico')) || [];
 
-function render(){
-document.getElementById('clientes').innerHTML =
-clientes.map(c => '<p>👤 '+c+'</p>').join('');
-document.getElementById('saldo').innerText='Saldo: R$ '+saldo;
+function salvar(){
 localStorage.setItem('clientes',JSON.stringify(clientes));
 localStorage.setItem('saldo',saldo);
+localStorage.setItem('historico',JSON.stringify(historico));
 }
 
-function addCliente(){
-let nome = prompt('Nome do cliente');
-if(nome){clientes.push(nome);render();}
+function render(){
+document.getElementById('saldo').innerText='R$ '+saldo.toFixed(2);
+
+document.getElementById('clientes').innerHTML=
+clientes.map((c,i)=>'<p>'+c+' <button onclick=\"delCliente('+i+')\">❌</button></p>').join('');
+
+document.getElementById('historico').innerHTML=
+historico.map(h=>'<p>'+h+'</p>').join('');
+
+salvar();
 }
 
-function addEntrada(){
-let valor = prompt('Valor da entrada');
-if(valor){saldo += Number(valor);render();}
+function novoCliente(){
+let n=prompt('Nome cliente');
+if(n){clientes.push(n);historico.unshift('Cliente: '+n);render();}
+}
+
+function delCliente(i){
+clientes.splice(i,1);
+render();
+}
+
+function novaEntrada(){
+let v=Number(prompt('Valor entrada'));
+if(v){saldo+=v;historico.unshift('Entrada R$ '+v);render();}
+}
+
+function novaSaida(){
+let v=Number(prompt('Valor saída'));
+if(v){saldo-=v;historico.unshift('Saída R$ '+v);render();}
+}
+
+function novoOrc(){
+let n=prompt('Nome orçamento');
+if(n){historico.unshift('Orçamento: '+n);render();}
 }
 
 render();
