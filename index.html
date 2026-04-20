@@ -3,42 +3,56 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Innovare Fase 2</title>
+<title>Innovare Fase 3</title>
 </head>
 
-<body style="margin:0;background:#000;color:#fff;font-family:Arial">
-
-<div style="padding:20px">
+<body style="margin:0;background:#000;color:#fff;font-family:Arial;padding:20px">
 
 <h1 style="color:#D4AF37">Innovare Planejados</h1>
-<p>Sistema Fase 2</p>
+<p>Sistema Premium Real</p>
 
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px;margin-top:20px">
+<button onclick="addCliente()" style="width:100%;padding:18px;font-size:18px;background:#D4AF37;border:none;border-radius:15px;margin-top:15px">
+➕ Adicionar Cliente
+</button>
 
-<button style="padding:20px;font-size:18px;border:none;border-radius:15px;background:#111;color:#fff">👥 Clientes</button>
+<button onclick="addEntrada()" style="width:100%;padding:18px;font-size:18px;background:#111;color:#fff;border:none;border-radius:15px;margin-top:10px">
+💰 Nova Entrada
+</button>
 
-<button style="padding:20px;font-size:18px;border:none;border-radius:15px;background:#111;color:#fff">💰 Financeiro</button>
-
-<button style="padding:20px;font-size:18px;border:none;border-radius:15px;background:#111;color:#fff">🧾 Orçamentos</button>
-
-<button style="padding:20px;font-size:18px;border:none;border-radius:15px;background:#111;color:#fff">📅 Agenda</button>
-
+<div style="background:#111;padding:20px;border-radius:15px;margin-top:20px">
+<h2>Clientes</h2>
+<div id="clientes"></div>
 </div>
 
-<div style="margin-top:30px;background:#111;padding:20px;border-radius:15px">
-<h2>Resumo</h2>
-<p>Saldo: R$ 8.450</p>
-<p>Clientes: 14</p>
-<p>Orçamentos Pendentes: 5</p>
+<div style="background:#111;padding:20px;border-radius:15px;margin-top:20px">
+<h2>Financeiro</h2>
+<p id="saldo">Saldo: R$ 0</p>
 </div>
 
-<div style="margin-top:20px;background:#111;padding:20px;border-radius:15px">
-<h2>Agenda Hoje</h2>
-<p>✔ Medição 09:00</p>
-<p>✔ Entrega 14:00</p>
-</div>
+<script>
+let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
+let saldo = Number(localStorage.getItem('saldo')) || 0;
 
-</div>
+function render(){
+document.getElementById('clientes').innerHTML =
+clientes.map(c => '<p>👤 '+c+'</p>').join('');
+document.getElementById('saldo').innerText='Saldo: R$ '+saldo;
+localStorage.setItem('clientes',JSON.stringify(clientes));
+localStorage.setItem('saldo',saldo);
+}
+
+function addCliente(){
+let nome = prompt('Nome do cliente');
+if(nome){clientes.push(nome);render();}
+}
+
+function addEntrada(){
+let valor = prompt('Valor da entrada');
+if(valor){saldo += Number(valor);render();}
+}
+
+render();
+</script>
 
 </body>
 </html>
