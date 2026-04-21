@@ -223,7 +223,9 @@ p1=null;
 alert("Toque dois pontos na foto");
 }
 
-document.getElementById("imgGrande").onclick=function(e){
+document.getElementById("imgGrande").addEventListener("click",capturarPonto);
+document.getElementById("imgGrande").addEventListener("touchstart",capturarPonto);
+function capturarPonto(e){
 if(!medindo)return;
 
 let rect=this.getBoundingClientRect();
@@ -243,7 +245,7 @@ medindo=false;
 p1=null;
 desenharMedidas();
 salvar();
-};
+}
 
 function desenharMedidas(){
 let svg=document.getElementById("camadaMedidas");
