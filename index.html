@@ -13,18 +13,22 @@ color:#fff;
 font-family:Arial;
 padding:15px;
 }
+
 h1{color:#D4AF37}
+
 .board{
 display:grid;
 grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
 gap:12px;
 }
+
 .col{
 background:#181818;
 padding:12px;
 border-radius:14px;
 min-height:260px;
 }
+
 .card{
 background:#222;
 padding:10px;
@@ -32,6 +36,7 @@ border-radius:10px;
 margin-bottom:8px;
 font-size:14px;
 }
+
 .alta{border-left:5px solid red;}
 .media{border-left:5px solid orange;}
 .baixa{border-left:5px solid green;}
@@ -66,7 +71,7 @@ box-sizing:border-box;
 <body>
 
 <h1>Innovare Planejados</h1>
-<p>Trello Premium</p>
+<p>Quadro Definitivo</p>
 
 <button onclick="novaObra()">🪵 Nova Obra</button>
 
@@ -95,42 +100,75 @@ localStorage.setItem("obras", JSON.stringify(obras));
 }
 
 function render(){
+
 etapas.forEach(e=>{
 document.getElementById(e).innerHTML="";
 });
 
 obras.forEach((o,i)=>{
 
-let mostrarValor = ["orcamento","fechado","producao","montagem","entregue"].includes(o.etapa);
-
 let classe = o.prioridade || "media";
+let html = "";
 
-let html = `
+if(o.etapa=="lead" || o.etapa=="medicao"){
+
+html = `
 <div class="card ${classe}">
 <b>${o.nome}</b><br>
-
-${mostrarValor ? "R$ "+Number(o.valor).toFixed(2)+"<br>" : ""}
-
 📞 ${o.tel}<br>
+
+<select onchange="mudar(${i},this.value)">
+${opcoes(o.etapa)}
+</select>
+</div>
+`;
+
+}
+
+else if(o.etapa=="orcamento"){
+
+html = `
+<div class="card ${classe}">
+<b>${o.nome}</b><br>
+R$ ${Number(o.valor).toFixed(2)}<br>
 📅 ${o.data}<br>
 
+<select onchange="mudar(${i},this.value)">
+${opcoes(o.etapa)}
+</select>
+
+<select onchange="prioridade(${i},this.value)">
+${prioridades(o.prioridade)}
+</select>
+</div>
+`;
+
+}
+
+else{
+
+html = `
+<div class="card ${classe}">
+<b>${o.nome}</b><br>
+R$ ${Number(o.valor).toFixed(2)}<br>
+📞 ${o.tel}<br>
+📅 ${o.data}<br>
 💵 Pago: R$ ${Number(o.pago).toFixed(2)}<br>
 💰 Falta: R$ ${(Number(o.valor)-Number(o.pago)).toFixed(2)}<br>
 
 <select onchange="mudar(${i},this.value)">
-${etapas.map(et=>`<option value="${et}" ${o.etapa==et?'selected':''}>${et}</option>`).join("")}
+${opcoes(o.etapa)}
 </select>
 
 <select onchange="prioridade(${i},this.value)">
-<option value="alta" ${o.prioridade=="alta"?'selected':''}>🔴 Alta</option>
-<option value="media" ${o.prioridade=="media"?'selected':''}>🟡 Média</option>
-<option value="baixa" ${o.prioridade=="baixa"?'selected':''}>🟢 Baixa</option>
+${prioridades(o.prioridade)}
 </select>
 
 <a href="https://wa.me/55${o.tel}" target="_blank">📲 WhatsApp</a>
-
 </div>
 `;
+
+}
 
 document.getElementById(o.etapa).innerHTML += html;
 
@@ -139,21 +177,36 @@ document.getElementById(o.etapa).innerHTML += html;
 salvar();
 }
 
+function opcoes(atual){
+return etapas.map(et=>
+`<option value="${et}" ${atual==et?'selected':''}>${et}</option>`
+).join("");
+}
+
+function prioridades(p){
+return `
+<option value="alta" ${p=="alta"?'selected':''}>🔴 Alta</option>
+<option value="media" ${p=="media"?'selected':''}>🟡 Média</option>
+<option value="baixa" ${p=="baixa"?'selected':''}>🟢 Baixa</option>
+`;
+}
+
 function novaObra(){
+
 let nome = prompt("Nome cliente:");
 if(!nome)return;
 
 let tel = prompt("Telefone:");
-let valor = prompt("Valor:");
+let valor = prompt("Valor orçamento:");
 let pago = prompt("Entrada paga:");
 let data = prompt("Data entrega:");
 
 obras.push({
 nome:nome,
-tel:tel||"",
-valor:valor||0,
-pago:pago||0,
-data:data||"-",
+tel:tel || "",
+valor:valor || 0,
+pago:pago || 0,
+data:data || "-",
 prioridade:"media",
 etapa:"lead"
 });
@@ -162,12 +215,12 @@ render();
 }
 
 function mudar(i,nova){
-obras[i].etapa=nova;
+obras[i].etapa = nova;
 render();
 }
 
 function prioridade(i,p){
-obras[i].prioridade=p;
+obras[i].prioridade = p;
 render();
 }
 
