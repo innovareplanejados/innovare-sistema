@@ -5,36 +5,43 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Innovare Planejados</title>
 
-<meta name="theme-color" content="#0b0b0b">
-<link rel="manifest" href="manifest.json">
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <style>
-body{margin:0;background:#0b0b0b;color:#fff;font-family:Arial}
-.topo{padding:20px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
-.card{background:#181818;padding:18px;border-radius:14px}
+body{
+margin:0;
+background:#0b0b0b;
+color:#fff;
+font-family:Arial;
+padding:20px;
+}
+h1{color:#D4AF37}
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+gap:12px;
+}
+.card,.sec{
+background:#181818;
+padding:18px;
+border-radius:14px;
+}
 button{
 width:100%;
 padding:15px;
+margin-top:10px;
 border:none;
 border-radius:12px;
 background:#D4AF37;
-font-size:16px;
 font-weight:bold;
-margin-top:10px;
+font-size:16px;
 cursor:pointer;
 }
-.sec{background:#181818;padding:18px;border-radius:14px;margin-top:15px}
+p{margin:6px 0}
 </style>
 </head>
 
 <body>
 
-<div class="topo">
-
-<h1 style="color:#D4AF37">Innovare Planejados</h1>
+<h1>Innovare Planejados</h1>
 <p>Painel Executivo</p>
 
 <div class="grid">
@@ -50,7 +57,7 @@ cursor:pointer;
 </div>
 
 <div class="card">
-<h3>🧾 Obras</h3>
+<h3>🪵 Obras</h3>
 <p id="obras">0</p>
 </div>
 
@@ -64,89 +71,81 @@ cursor:pointer;
 <button onclick="novoCliente()">👥 Novo Cliente</button>
 <button onclick="novaEntrada()">💰 Nova Entrada</button>
 <button onclick="novaObra()">🪵 Nova Obra</button>
-<button onclick="recarregar()">🔄 Atualizar</button>
+<button onclick="limparTudo()">🗑️ Limpar Tudo</button>
 
-<div class="sec">
+<div class="sec" style="margin-top:15px">
 <h2>Atividades</h2>
 <div id="lista"></div>
 </div>
 
-</div>
-
 <script>
-const supabase = window.supabase.createClient(
-'https://ckmotdxrdscateoftboi.supabase.co',
-'sb_publishable_05arcMnUYFrLB0xnBX0Upg_GPkSS2_u'
-);
+let clientes = JSON.parse(localStorage.getItem("clientes")) || [];
+let caixa = Number(localStorage.getItem("caixa")) || 0;
+let obras = JSON.parse(localStorage.getItem("obras")) || [];
 
-async function recarregar(){
-try{
+function salvar(){
+localStorage.setItem("clientes", JSON.stringify(clientes));
+localStorage.setItem("caixa", caixa);
+localStorage.setItem("obras", JSON.stringify(obras));
+}
 
-const {data:clientes=[]} = await supabase.from('clientes').select('*');
-const {data:financeiro=[]} = await supabase.from('financeiro').select('*');
-const {data:orcamentos=[]} = await supabase.from('orcamentos').select('*');
+function atualizar(){
+document.getElementById("clientes").innerText = clientes.length;
+document.getElementById("obras").innerText = obras.length;
+document.getElementById("caixa").innerText =
+"R$ " + caixa.toFixed(2).replace(".",",");
 
-document.getElementById('clientes').innerText = clientes.length;
-document.getElementById('obras').innerText = orcamentos.length;
+let meta = ((caixa/80000)*100).toFixed(0);
+document.getElementById("meta").innerText = meta + "%";
 
-let total = 0;
-financeiro.forEach(i=> total += Number(i.valor || 0));
+let html = "";
 
-document.getElementById('caixa').innerText =
-'R$ ' + total.toFixed(2).replace('.',',');
+clientes.forEach(c=>{
+html += "<p>👥 "+c.nome+" - "+c.tel+"</p>";
+});
 
-let meta = ((total/80000)*100).toFixed(0);
-document.getElementById('meta').innerText = meta + '%';
+obras.forEach(o=>{
+html += "<p>🪵 "+o.nome+" - R$ "+Number(o.valor).toFixed(2)+"</p>";
+});
 
-document.getElementById('lista').innerHTML =
-`
-<p>👥 Clientes cadastrados: ${clientes.length}</p>
-<p>💰 Movimentos financeiros: ${financeiro.length}</p>
-<p>🧾 Obras abertas: ${orcamentos.length}</p>
-`;
+document.getElementById("lista").innerHTML = html;
 
-}catch(e){
-alert("Erro ao carregar dados");
-console.log(e);
+salvar();
+}
+
+function novoCliente(){
+let nome = prompt("Nome cliente:");
+if(!nome)return;
+let tel = prompt("Telefone:");
+clientes.push({nome,tel});
+atualizar();
+}
+
+function novaEntrada(){
+let valor = prompt("Valor entrada:");
+if(!valor)return;
+caixa += Number(valor);
+atualizar();
+}
+
+function novaObra(){
+let nome = prompt("Nome cliente:");
+if(!nome)return;
+let valor = prompt("Valor obra:");
+obras.push({nome,valor});
+atualizar();
+}
+
+function limparTudo(){
+if(confirm("Apagar tudo?")){
+clientes=[];
+caixa=0;
+obras=[];
+atualizar();
 }
 }
 
-async function novoCliente(){
-let nome = prompt("Nome do cliente");
-let tel = prompt("Telefone");
-if(!nome) return;
-
-await supabase.from('clientes').insert([
-{nome:nome, telefone:tel}
-]);
-
-recarregar();
-}
-
-async function novaEntrada(){
-let valor = prompt("Valor da entrada");
-if(!valor) return;
-
-await supabase.from('financeiro').insert([
-{tipo:'entrada', valor:valor, descricao:'manual'}
-]);
-
-recarregar();
-}
-
-async function novaObra(){
-let cliente = prompt("Cliente");
-let valor = prompt("Valor");
-if(!cliente) return;
-
-await supabase.from('orcamentos').insert([
-{cliente:cliente, valor:valor, status:'lead'}
-]);
-
-recarregar();
-}
-
-recarregar();
+atualizar();
 </script>
 
 </body>
