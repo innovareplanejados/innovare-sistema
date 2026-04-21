@@ -3,64 +3,74 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Innovare CEO</title>
+<title>Innovare ERP</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
-<body style="margin:0;background:#090909;color:#fff;font-family:Arial;padding:20px">
+<body style="margin:0;background:#080808;color:#fff;font-family:Arial">
 
-<h1 style="color:#D4AF37;font-size:34px">Innovare Planejados</h1>
-<p style="color:#aaa">CEO Corporativo</p>
+<div style="width:240px;height:100vh;background:#111;position:fixed;padding:20px;box-sizing:border-box">
+<h2 style="color:#D4AF37">Innovare ERP</h2>
+<p>🏠 Dashboard</p>
+<p>👥 Clientes</p>
+<p>🧾 Comercial</p>
+<p>💰 Financeiro</p>
+<p>📦 Estoque</p>
+<p>🪵 Produção</p>
+<p>📅 Agenda</p>
+<p>⚙️ Configurações</p>
+</div>
+
+<div style="margin-left:240px;padding:20px">
+
+<h1 style="color:#D4AF37">ERP Industrial Profissional</h1>
+<p style="color:#aaa">Gestão Total da Marcenaria</p>
 
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px;margin-top:20px">
 
 <div style="background:#161616;padding:20px;border-radius:14px">
-<h3>👥 Clientes</h3>
-<p id="totClientes">0</p>
+<h3>💰 Caixa</h3>
+<p id="caixa">R$ 0,00</p>
 </div>
 
 <div style="background:#161616;padding:20px;border-radius:14px">
-<h3>💰 Caixa</h3>
-<p id="totCaixa">R$ 0,00</p>
+<h3>👥 Clientes</h3>
+<p id="clientes">0</p>
 </div>
 
 <div style="background:#161616;padding:20px;border-radius:14px">
 <h3>🧾 Orçamentos</h3>
-<p id="totOrc">0</p>
+<p id="orc">0</p>
 </div>
 
 <div style="background:#161616;padding:20px;border-radius:14px">
-<h3>⚠️ Contas</h3>
-<p id="totContas">0</p>
+<h3>📅 Agenda</h3>
+<p id="agenda">0</p>
 </div>
 
 </div>
 
-<div style="margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<div style="margin-top:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">
 
-<button onclick="novoCliente()" style="padding:15px;background:#D4AF37;border:none;border-radius:12px">👥 Novo Cliente</button>
+<button onclick="novoCliente()" style="padding:15px;background:#D4AF37;border:none;border-radius:12px">👥 Cliente</button>
 
-<button onclick="editarCliente()" style="padding:15px;background:#1a1a1a;color:#fff;border:none;border-radius:12px">✏️ Editar Cliente</button>
+<button onclick="entrada()" style="padding:15px;background:#1a1a1a;color:#fff;border:none;border-radius:12px">💰 Entrada</button>
 
-<button onclick="excluirCliente()" style="padding:15px;background:#1a1a1a;color:#fff;border:none;border-radius:12px">🗑️ Excluir Cliente</button>
+<button onclick="orcamento()" style="padding:15px;background:#1a1a1a;color:#fff;border:none;border-radius:12px">🧾 Orçamento</button>
 
-<button onclick="novaEntrada()" style="padding:15px;background:#1a1a1a;color:#fff;border:none;border-radius:12px">💰 Nova Entrada</button>
+<button onclick="estoque()" style="padding:15px;background:#1a1a1a;color:#fff;border:none;border-radius:12px">📦 Estoque</button>
 
-<button onclick="novoOrc()" style="padding:15px;background:#1a1a1a;color:#fff;border:none;border-radius:12px">🧾 Novo Orçamento</button>
+<button onclick="producao()" style="padding:15px;background:#1a1a1a;color:#fff;border:none;border-radius:12px">🪵 Produção</button>
 
-<button onclick="conta()" style="padding:15px;background:#1a1a1a;color:#fff;border:none;border-radius:12px">⚠️ Conta a Pagar</button>
+<button onclick="agendaNova()" style="padding:15px;background:#1a1a1a;color:#fff;border:none;border-radius:12px">📅 Agenda</button>
 
-</div>
-
-<div style="background:#161616;padding:20px;border-radius:14px;margin-top:20px">
-<h2>Clientes</h2>
-<div id="listaClientes"></div>
 </div>
 
 <div style="background:#161616;padding:20px;border-radius:14px;margin-top:20px">
-<h2>Resumo CEO</h2>
-<p>Meta mensal: R$ 50.000</p>
-<p id="lucro">Lucro atual: R$ 0,00</p>
+<h2>Atividades</h2>
+<div id="lista"></div>
+</div>
+
 </div>
 
 <script>
@@ -70,74 +80,56 @@ const supabase = window.supabase.createClient(
 );
 
 async function carregar(){
-let {data:clientes}=await supabase.from('clientes').select('*');
-let {data:fin}=await supabase.from('financeiro').select('*');
-let {data:orc}=await supabase.from('orcamentos').select('*');
-let {data:cont}=await supabase.from('agenda').select('*');
+let {data:c}=await supabase.from('clientes').select('*');
+let {data:f}=await supabase.from('financeiro').select('*');
+let {data:o}=await supabase.from('orcamentos').select('*');
+let {data:a}=await supabase.from('agenda').select('*');
 
-document.getElementById('totClientes').innerText = clientes.length;
-document.getElementById('totOrc').innerText = orc.length;
-document.getElementById('totContas').innerText = cont.length;
+document.getElementById('clientes').innerText=c.length;
+document.getElementById('orc').innerText=o.length;
+document.getElementById('agenda').innerText=a.length;
 
-let caixa = 0;
-fin.forEach(i=> caixa += Number(i.valor||0));
+let total=0;
+f.forEach(i=> total += Number(i.valor||0));
+document.getElementById('caixa').innerText='R$ '+total.toFixed(2).replace('.',',');
 
-document.getElementById('totCaixa').innerText='R$ '+caixa.toFixed(2).replace('.',',');
-document.getElementById('lucro').innerText='Lucro atual: R$ '+caixa.toFixed(2).replace('.',',');
-
-document.getElementById('listaClientes').innerHTML =
-clientes.map(c=>'<p>👤 '+c.id+' - '+c.nome+' - '+(c.telefone||'')+'</p>').join('');
+document.getElementById('lista').innerHTML =
+[
+'👥 Clientes cadastrados: '+c.length,
+'💰 Movimentos financeiros: '+f.length,
+'🧾 Orçamentos emitidos: '+o.length,
+'📅 Compromissos: '+a.length
+].map(i=>'<p>'+i+'</p>').join('');
 }
 
 async function novoCliente(){
-let nome=prompt('Nome');
-let tel=prompt('Telefone');
-if(nome){
-await supabase.from('clientes').insert([{nome:nome,telefone:tel}]);
-carregar();
-}
+let n=prompt('Nome cliente');
+let t=prompt('Telefone');
+if(n){await supabase.from('clientes').insert([{nome:n,telefone:t}]);carregar();}
 }
 
-async function editarCliente(){
-let id=prompt('ID cliente');
-let nome=prompt('Novo nome');
-if(id && nome){
-await supabase.from('clientes').update({nome:nome}).eq('id',id);
-carregar();
-}
+async function entrada(){
+let v=prompt('Valor entrada');
+if(v){await supabase.from('financeiro').insert([{tipo:'entrada',valor:v,descricao:'manual'}]);carregar();}
 }
 
-async function excluirCliente(){
-let id=prompt('ID cliente');
-if(id){
-await supabase.from('clientes').delete().eq('id',id);
-carregar();
-}
-}
-
-async function novaEntrada(){
-let v=prompt('Valor');
-if(v){
-await supabase.from('financeiro').insert([{tipo:'entrada',valor:v,descricao:'manual'}]);
-carregar();
-}
-}
-
-async function novoOrc(){
+async function orcamento(){
 let c=prompt('Cliente');
 let v=prompt('Valor');
-if(c){
-await supabase.from('orcamentos').insert([{cliente:c,valor:v,status:'aberto'}]);
-carregar();
-}
+if(c){await supabase.from('orcamentos').insert([{cliente:c,valor:v,status:'aberto'}]);carregar();}
 }
 
-async function conta(){
-let t=prompt('Conta');
-if(t){
-await supabase.from('agenda').insert([{titulo:t,data:'pendente'}]);
-carregar();
+function estoque(){
+alert('Módulo estoque pronto para próxima fase.');
 }
+
+function producao(){
+alert('Módulo produção pronto para próxima fase.');
+}
+
+async function agendaNova(){
+let t=prompt('Compromisso');
+if(t){await supabase.from('agenda').insert([{titulo:t,data:'pendente'}]);carregar();}
 }
 
 carregar();
