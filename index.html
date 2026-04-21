@@ -11,141 +11,158 @@ margin:0;
 background:#0b0b0b;
 color:#fff;
 font-family:Arial;
-padding:20px;
+padding:15px;
 }
 h1{color:#D4AF37}
-.grid{
+.board{
 display:grid;
-grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
 gap:12px;
 }
-.card,.sec{
+.col{
 background:#181818;
-padding:18px;
+padding:12px;
 border-radius:14px;
+min-height:250px;
+}
+.card{
+background:#222;
+padding:10px;
+border-radius:10px;
+margin-bottom:8px;
+font-size:14px;
 }
 button{
 width:100%;
-padding:15px;
-margin-top:10px;
+padding:14px;
+margin-top:12px;
 border:none;
 border-radius:12px;
 background:#D4AF37;
 font-weight:bold;
-font-size:16px;
 cursor:pointer;
 }
-p{margin:6px 0}
+select{
+width:100%;
+margin-top:6px;
+padding:8px;
+border-radius:8px;
+}
 </style>
 </head>
 
 <body>
 
 <h1>Innovare Planejados</h1>
-<p>Painel Executivo</p>
+<p>Quadro de Obras</p>
 
-<div class="grid">
-
-<div class="card">
-<h3>💰 Caixa</h3>
-<p id="caixa">R$ 0,00</p>
-</div>
-
-<div class="card">
-<h3>👥 Clientes</h3>
-<p id="clientes">0</p>
-</div>
-
-<div class="card">
-<h3>🪵 Obras</h3>
-<p id="obras">0</p>
-</div>
-
-<div class="card">
-<h3>🎯 Meta</h3>
-<p id="meta">0%</p>
-</div>
-
-</div>
-
-<button onclick="novoCliente()">👥 Novo Cliente</button>
-<button onclick="novaEntrada()">💰 Nova Entrada</button>
 <button onclick="novaObra()">🪵 Nova Obra</button>
-<button onclick="limparTudo()">🗑️ Limpar Tudo</button>
 
-<div class="sec" style="margin-top:15px">
-<h2>Atividades</h2>
-<div id="lista"></div>
+<div class="board">
+
+<div class="col">
+<h3>📞 Lead</h3>
+<div id="lead"></div>
+</div>
+
+<div class="col">
+<h3>📐 Medição</h3>
+<div id="medicao"></div>
+</div>
+
+<div class="col">
+<h3>🧾 Orçamento</h3>
+<div id="orcamento"></div>
+</div>
+
+<div class="col">
+<h3>💰 Fechado</h3>
+<div id="fechado"></div>
+</div>
+
+<div class="col">
+<h3>🪵 Produção</h3>
+<div id="producao"></div>
+</div>
+
+<div class="col">
+<h3>🔧 Montagem</h3>
+<div id="montagem"></div>
+</div>
+
+<div class="col">
+<h3>✅ Entregue</h3>
+<div id="entregue"></div>
+</div>
+
 </div>
 
 <script>
-let clientes = JSON.parse(localStorage.getItem("clientes")) || [];
-let caixa = Number(localStorage.getItem("caixa")) || 0;
 let obras = JSON.parse(localStorage.getItem("obras")) || [];
 
+const etapas = [
+"lead",
+"medicao",
+"orcamento",
+"fechado",
+"producao",
+"montagem",
+"entregue"
+];
+
 function salvar(){
-localStorage.setItem("clientes", JSON.stringify(clientes));
-localStorage.setItem("caixa", caixa);
 localStorage.setItem("obras", JSON.stringify(obras));
 }
 
-function atualizar(){
-document.getElementById("clientes").innerText = clientes.length;
-document.getElementById("obras").innerText = obras.length;
-document.getElementById("caixa").innerText =
-"R$ " + caixa.toFixed(2).replace(".",",");
-
-let meta = ((caixa/80000)*100).toFixed(0);
-document.getElementById("meta").innerText = meta + "%";
-
-let html = "";
-
-clientes.forEach(c=>{
-html += "<p>👥 "+c.nome+" - "+c.tel+"</p>";
+function render(){
+etapas.forEach(e=>{
+document.getElementById(e).innerHTML="";
 });
 
-obras.forEach(o=>{
-html += "<p>🪵 "+o.nome+" - R$ "+Number(o.valor).toFixed(2)+"</p>";
-});
+obras.forEach((o,i)=>{
+let html = `
+<div class="card">
+<b>${o.nome}</b><br>
+R$ ${Number(o.valor).toFixed(2)}<br>
+📞 ${o.tel}<br>
 
-document.getElementById("lista").innerHTML = html;
+<select onchange="mudar(${i}, this.value)">
+${etapas.map(et=>
+`<option value="${et}" ${o.etapa==et?'selected':''}>${et}</option>`
+).join("")}
+</select>
+</div>
+`;
+
+document.getElementById(o.etapa).innerHTML += html;
+});
 
 salvar();
-}
-
-function novoCliente(){
-let nome = prompt("Nome cliente:");
-if(!nome)return;
-let tel = prompt("Telefone:");
-clientes.push({nome,tel});
-atualizar();
-}
-
-function novaEntrada(){
-let valor = prompt("Valor entrada:");
-if(!valor)return;
-caixa += Number(valor);
-atualizar();
 }
 
 function novaObra(){
 let nome = prompt("Nome cliente:");
 if(!nome)return;
-let valor = prompt("Valor obra:");
-obras.push({nome,valor});
-atualizar();
+
+let valor = prompt("Valor:");
+let tel = prompt("Telefone:");
+
+obras.push({
+nome:nome,
+valor:valor || 0,
+tel:tel || "",
+etapa:"lead"
+});
+
+render();
 }
 
-function limparTudo(){
-if(confirm("Apagar tudo?")){
-clientes=[];
-caixa=0;
-obras=[];
-atualizar();
-}
+function mudar(i,nova){
+obras[i].etapa = nova;
+render();
 }
 
-atualizar();
+render();
 </script>
 
 </body>
