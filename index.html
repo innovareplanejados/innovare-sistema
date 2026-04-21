@@ -3,30 +3,54 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Innovare Master Real</title>
+<title>Innovare Executivo</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
-<body style="margin:0;background:#050505;color:#fff;font-family:Arial;padding:20px">
+<body style="margin:0;background:#0b0b0b;color:#fff;font-family:Arial;padding:20px">
 
-<h1 style="color:#D4AF37">Innovare Planejados</h1>
-<p>Banco de Dados Real ☁️</p>
+<h1 style="color:#D4AF37;font-size:34px">Innovare Planejados</h1>
+<p style="color:#aaa">Executivo Sério</p>
 
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px;margin-top:20px">
 
-<button onclick="novoCliente()" style="padding:16px;background:#D4AF37;border:none;border-radius:12px">👥 Novo Cliente</button>
+<div style="background:#161616;padding:20px;border-radius:14px">
+<h3>👥 Clientes</h3>
+<p id="totClientes">0</p>
+</div>
 
-<button onclick="novaEntrada()" style="padding:16px;background:#111;color:#fff;border:none;border-radius:12px">💰 Entrada</button>
+<div style="background:#161616;padding:20px;border-radius:14px">
+<h3>💰 Entradas</h3>
+<p id="totEntradas">R$ 0,00</p>
+</div>
 
-<button onclick="novoOrc()" style="padding:16px;background:#111;color:#fff;border:none;border-radius:12px">🧾 Orçamento</button>
+<div style="background:#161616;padding:20px;border-radius:14px">
+<h3>🧾 Orçamentos</h3>
+<p id="totOrc">0</p>
+</div>
 
-<button onclick="novaAgenda()" style="padding:16px;background:#111;color:#fff;border:none;border-radius:12px">📅 Agenda</button>
+<div style="background:#161616;padding:20px;border-radius:14px">
+<h3>📅 Agenda</h3>
+<p id="totAgenda">0</p>
+</div>
 
 </div>
 
-<div style="background:#111;padding:20px;border-radius:15px;margin-top:20px">
-<h2>Clientes Online</h2>
-<div id="clientes"></div>
+<div style="margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+
+<button onclick="novoCliente()" style="padding:15px;background:#D4AF37;border:none;border-radius:12px">👥 Novo Cliente</button>
+
+<button onclick="buscarCliente()" style="padding:15px;background:#1a1a1a;color:#fff;border:none;border-radius:12px">🔍 Buscar Cliente</button>
+
+<button onclick="novaEntrada()" style="padding:15px;background:#1a1a1a;color:#fff;border:none;border-radius:12px">💰 Nova Entrada</button>
+
+<button onclick="novoOrc()" style="padding:15px;background:#1a1a1a;color:#fff;border:none;border-radius:12px">🧾 Novo Orçamento</button>
+
+</div>
+
+<div style="background:#161616;padding:20px;border-radius:14px;margin-top:20px">
+<h2>Clientes</h2>
+<div id="listaClientes"></div>
 </div>
 
 <script>
@@ -36,43 +60,53 @@ const supabase = window.supabase.createClient(
 );
 
 async function carregar(){
-let {data} = await supabase.from('clientes').select('*').order('id',{ascending:false});
-document.getElementById('clientes').innerHTML =
-data.map(c=>'<p>👤 '+c.nome+' - '+(c.telefone||'')+'</p>').join('');
+let {data:clientes}=await supabase.from('clientes').select('*');
+let {data:fin}=await supabase.from('financeiro').select('*');
+let {data:orc}=await supabase.from('orcamentos').select('*');
+let {data:ag}=await supabase.from('agenda').select('*');
+
+document.getElementById('totClientes').innerText = clientes.length;
+
+let total = 0;
+fin.forEach(i=> total += Number(i.valor||0));
+document.getElementById('totEntradas').innerText='R$ '+total.toFixed(2).replace('.',',');
+
+document.getElementById('totOrc').innerText = orc.length;
+document.getElementById('totAgenda').innerText = ag.length;
+
+document.getElementById('listaClientes').innerHTML =
+clientes.map(c=>'<p>👤 '+c.nome+' - '+(c.telefone||'')+'</p>').join('');
 }
 
 async function novoCliente(){
-let nome = prompt('Nome cliente');
-let tel = prompt('Telefone');
+let nome=prompt('Nome');
+let tel=prompt('Telefone');
 if(nome){
 await supabase.from('clientes').insert([{nome:nome,telefone:tel}]);
 carregar();
 }
 }
 
+function buscarCliente(){
+let n=prompt('Nome para buscar');
+if(!n)return;
+window.alert('Use Ctrl+F por enquanto: '+n);
+}
+
 async function novaEntrada(){
-let valor = prompt('Valor entrada');
-if(valor){
-await supabase.from('financeiro').insert([{tipo:'entrada',valor:valor,descricao:'manual'}]);
-alert('Entrada salva');
+let v=prompt('Valor');
+if(v){
+await supabase.from('financeiro').insert([{tipo:'entrada',valor:v,descricao:'manual'}]);
+carregar();
 }
 }
 
 async function novoOrc(){
-let cli = prompt('Cliente');
-let val = prompt('Valor');
-if(cli){
-await supabase.from('orcamentos').insert([{cliente:cli,valor:val,status:'aberto'}]);
-alert('Orçamento salvo');
-}
-}
-
-async function novaAgenda(){
-let t = prompt('Compromisso');
-let d = prompt('Data');
-if(t){
-await supabase.from('agenda').insert([{titulo:t,data:d}]);
-alert('Agenda salva');
+let c=prompt('Cliente');
+let v=prompt('Valor');
+if(c){
+await supabase.from('orcamentos').insert([{cliente:c,valor:v,status:'aberto'}]);
+carregar();
 }
 }
 
