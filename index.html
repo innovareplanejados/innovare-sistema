@@ -14,7 +14,7 @@ font-family:Arial;
 padding:12px;
 }
 h1{color:#D4AF37;margin:0 0 6px}
-.sub{color:#bbb;margin:0 0 14px}
+p{color:#bbb;margin:0 0 14px}
 
 button{
 width:100%;
@@ -29,16 +29,15 @@ cursor:pointer;
 
 .board{
 display:grid;
-grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
 gap:12px;
-margin-bottom:18px;
 }
 
 .col{
 background:#181818;
 padding:10px;
 border-radius:14px;
-min-height:240px;
+min-height:220px;
 }
 
 .card{
@@ -47,197 +46,174 @@ padding:10px;
 border-radius:10px;
 margin-bottom:8px;
 font-size:14px;
-touch-action:none;
 }
 
-select{
-width:100%;
-margin-top:6px;
-padding:8px;
+.thumb{
+width:48px;
+height:48px;
+object-fit:cover;
 border-radius:8px;
-border:none;
+margin:4px 4px 0 0;
+cursor:pointer;
 }
 
-.drop{
-outline:2px dashed #D4AF37;
+.modal{
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.9);
+display:none;
+align-items:center;
+justify-content:center;
+z-index:999;
+padding:20px;
 }
 
-.section{
-background:#181818;
-padding:12px;
-border-radius:14px;
-margin-top:10px;
+.modal img{
+max-width:100%;
+max-height:90vh;
+border-radius:12px;
 }
 
-.calendar{
-display:grid;
-grid-template-columns:repeat(7,1fr);
-gap:8px;
-margin-top:10px;
-}
-
-.day{
-background:#222;
+.close{
+position:absolute;
+top:15px;
+right:15px;
+background:#D4AF37;
+color:#000;
+padding:10px;
 border-radius:10px;
-padding:8px;
-min-height:90px;
-font-size:12px;
+font-weight:bold;
+cursor:pointer;
 }
 
-.tagM{display:block;background:#1e3a8a;padding:4px;border-radius:6px;margin-top:4px}
-.tagT{display:block;background:#D4AF37;color:#000;padding:4px;border-radius:6px;margin-top:4px}
-.tagA{display:block;background:#991b1b;padding:4px;border-radius:6px;margin-top:4px}
-small{color:#bbb}
+select,input{
+width:100%;
+padding:8px;
+margin-top:6px;
+border:none;
+border-radius:8px;
+}
 </style>
 </head>
 
 <body>
 
 <h1>Innovare Planejados</h1>
-<p class="sub">Quadro + Agenda Visual</p>
+<p>Quadro com Fotos</p>
 
 <button onclick="novaObra()">🪵 Nova Obra</button>
-<button onclick="novoEvento()">📅 Novo Compromisso</button>
 
 <div class="board">
-<div class="col" data-etapa="lead"><h3>📞 Lead</h3><div id="lead"></div></div>
-<div class="col" data-etapa="medicao"><h3>📐 Medição</h3><div id="medicao"></div></div>
-<div class="col" data-etapa="orcamento"><h3>🧾 Orçamento</h3><div id="orcamento"></div></div>
-<div class="col" data-etapa="fechado"><h3>💰 Fechado</h3><div id="fechado"></div></div>
-<div class="col" data-etapa="producao"><h3>🪵 Produção</h3><div id="producao"></div></div>
-<div class="col" data-etapa="montagem"><h3>🔧 Montagem</h3><div id="montagem"></div></div>
-<div class="col" data-etapa="entregue"><h3>✅ Entregue</h3><div id="entregue"></div></div>
+
+<div class="col"><h3>📞 Lead</h3><div id="lead"></div></div>
+<div class="col"><h3>📐 Medição</h3><div id="medicao"></div></div>
+<div class="col"><h3>🧾 Orçamento</h3><div id="orcamento"></div></div>
+<div class="col"><h3>💰 Fechado</h3><div id="fechado"></div></div>
+<div class="col"><h3>🪵 Produção</h3><div id="producao"></div></div>
+<div class="col"><h3>🔧 Montagem</h3><div id="montagem"></div></div>
+<div class="col"><h3>✅ Entregue</h3><div id="entregue"></div></div>
+
 </div>
 
-<div class="section">
-<h2 style="margin:0">📅 Agenda da Semana</h2>
-<div class="calendar" id="agenda"></div>
+<div class="modal" id="modal" onclick="fecharFoto()">
+<div class="close">X</div>
+<img id="imgGrande">
 </div>
 
 <script>
 let obras = JSON.parse(localStorage.getItem("obras")) || [];
-let agenda = JSON.parse(localStorage.getItem("agenda")) || [];
-let atual = null;
 
 const etapas = ["lead","medicao","orcamento","fechado","producao","montagem","entregue"];
-const mobile = /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);
 
 function salvar(){
 localStorage.setItem("obras", JSON.stringify(obras));
-localStorage.setItem("agenda", JSON.stringify(agenda));
 }
 
-function renderBoard(){
-etapas.forEach(e=>document.getElementById(e).innerHTML="");
+function render(){
+
+etapas.forEach(e=>{
+document.getElementById(e).innerHTML="";
+});
 
 obras.forEach((o,i)=>{
-let div = document.createElement("div");
-div.className="card";
 
-let html = "<b>"+o.nome+"</b><br>";
+if(!o.fotos) o.fotos=[];
 
-if(o.etapa==="lead" || o.etapa==="medicao"){
-html += "📞 "+o.tel;
-}else if(o.etapa==="orcamento"){
-html += "R$ "+Number(o.valor).toFixed(2)+"<br>📅 "+o.data+"<br>🔥 "+o.prioridade;
-}else{
-html += "R$ "+Number(o.valor).toFixed(2)+"<br>📞 "+o.tel+"<br>📅 "+o.data+"<br>💵 Pago R$ "+Number(o.pago).toFixed(2);
-}
+let html = `
+<div class="card">
+<b>${o.nome}</b><br>
+📞 ${o.tel}<br>
+R$ ${Number(o.valor).toFixed(2)}<br>
 
-div.innerHTML = html;
+<select onchange="mudar(${i},this.value)">
+${etapas.map(et=>`<option value="${et}" ${o.etapa==et?'selected':''}>${et}</option>`).join("")}
+</select>
 
-if(mobile){
-div.ontouchstart = ()=> atual=i;
-}else{
-let sel = document.createElement("select");
-sel.innerHTML = etapas.map(et=>'<option value="'+et+'" '+(o.etapa===et?'selected':'')+'>'+et+'</option>').join("");
-sel.onchange = ()=>{ obras[i].etapa = sel.value; renderAll(); };
-div.appendChild(sel);
-}
+<input type="file" accept="image/*" onchange="foto(${i},this)">
+`;
 
-document.getElementById(o.etapa).appendChild(div);
+o.fotos.forEach(f=>{
+html += `<img src="${f}" class="thumb" onclick="abrirFoto('${f}')">`;
 });
 
-if(mobile){
-document.querySelectorAll(".col").forEach(col=>{
-col.ontouchmove = function(){ this.classList.add("drop"); };
-col.ontouchend = function(){
-this.classList.remove("drop");
-if(atual!==null){
-obras[atual].etapa = this.dataset.etapa;
-atual = null;
-renderAll();
-}
-}
-});
-}
-}
+html += `</div>`;
 
-function renderAgenda(){
-const dias = ["Seg","Ter","Qua","Qui","Sex","Sab","Dom"];
-let html = "";
+document.getElementById(o.etapa).innerHTML += html;
 
-for(let i=0;i<7;i++){
-html += '<div class="day"><b>'+dias[i]+'</b><br><small>'+(i+1)+'</small>';
-
-agenda.filter(e=>Number(e.dia)===i+1).forEach(ev=>{
-let cls = ev.tipo==="medicao" ? "tagM" : "tagT";
-if(ev.atrasado) cls = "tagA";
-html += '<span class="'+cls+'">'+ev.hora+' '+ev.nome+'</span>';
 });
 
-html += '</div>';
-}
-
-document.getElementById("agenda").innerHTML = html;
-}
-
-function renderAll(){
-renderBoard();
-renderAgenda();
 salvar();
 }
 
 function novaObra(){
+
 let nome = prompt("Nome cliente:");
-if(!nome) return;
+if(!nome)return;
+
 let tel = prompt("Telefone:");
 let valor = prompt("Valor:");
-let pago = prompt("Entrada paga:");
-let data = prompt("Data entrega:");
 
 obras.push({
 nome:nome,
 tel:tel||"",
 valor:valor||0,
-pago:pago||0,
-data:data||"-",
-prioridade:"média",
-etapa:"lead"
+etapa:"lead",
+fotos:[]
 });
 
-renderAll();
+render();
 }
 
-function novoEvento(){
-let tipo = prompt("Tipo: medicao ou montagem");
-if(!tipo) return;
-let nome = prompt("Cliente:");
-let dia = prompt("Dia semana: 1 Seg até 7 Dom");
-let hora = prompt("Hora:");
-
-agenda.push({
-tipo:tipo.toLowerCase(),
-nome:nome||"",
-dia:dia||1,
-hora:hora||"09:00",
-atrasado:false
-});
-
-renderAll();
+function mudar(i,nova){
+obras[i].etapa=nova;
+render();
 }
 
-renderAll();
+function foto(i,input){
+
+let file = input.files[0];
+if(!file)return;
+
+let reader = new FileReader();
+
+reader.onload = function(e){
+obras[i].fotos.push(e.target.result);
+render();
+}
+
+reader.readAsDataURL(file);
+}
+
+function abrirFoto(src){
+document.getElementById("imgGrande").src=src;
+document.getElementById("modal").style.display="flex";
+}
+
+function fecharFoto(){
+document.getElementById("modal").style.display="none";
+}
+
+render();
 </script>
 
 </body>
