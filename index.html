@@ -1,117 +1,74 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-
 <title>Innovare Planejados</title>
 
 <meta name="theme-color" content="#0b0b0b">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="Innovare Planejados">
-
 <link rel="manifest" href="manifest.json">
-<link rel="icon" href="icon-192.png">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body{margin:0;background:#0b0b0b;color:#fff;font-family:Arial}
+.topo{padding:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.card{background:#181818;padding:18px;border-radius:14px}
+button{
+width:100%;
+padding:15px;
+border:none;
+border-radius:12px;
+background:#D4AF37;
+font-size:16px;
+font-weight:bold;
+margin-top:10px;
+cursor:pointer;
+}
+.sec{background:#181818;padding:18px;border-radius:14px;margin-top:15px}
+</style>
 </head>
 
-<body style="margin:0;background:#0b0b0b;color:#fff;font-family:Arial">
+<body>
 
-<div style="width:250px;height:100vh;background:#141414;position:fixed;padding:22px;box-sizing:border-box">
-<h2 style="color:#D4AF37">Innovare ERP</h2>
-<p>🏠 Painel</p>
-<p>🪵 Obras</p>
-<p>👥 Clientes</p>
-<p>💰 Financeiro</p>
-<p>📅 Agenda</p>
-<p>⚙️ Configurações</p>
-</div>
+<div class="topo">
 
-<div style="margin-left:250px;padding:24px">
+<h1 style="color:#D4AF37">Innovare Planejados</h1>
+<p>Painel Executivo</p>
 
-<h1 style="color:#D4AF37">Executivo Elegante</h1>
-<p style="color:#aaa">Gestão total da marcenaria</p>
+<div class="grid">
 
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px;margin-top:20px">
-
-<div style="background:#181818;padding:20px;border-radius:16px">
-<h3>🎯 Meta Mensal</h3>
-<p>R$ 80.000</p>
-</div>
-
-<div style="background:#181818;padding:20px;border-radius:16px">
-<h3>📈 Progresso</h3>
-<p id="progresso">0%</p>
-</div>
-
-<div style="background:#181818;padding:20px;border-radius:16px">
+<div class="card">
 <h3>💰 Caixa</h3>
 <p id="caixa">R$ 0,00</p>
 </div>
 
-<div style="background:#181818;padding:20px;border-radius:16px">
-<h3>💵 A Receber</h3>
-<p>R$ 27.900</p>
+<div class="card">
+<h3>👥 Clientes</h3>
+<p id="clientes">0</p>
+</div>
+
+<div class="card">
+<h3>🧾 Obras</h3>
+<p id="obras">0</p>
+</div>
+
+<div class="card">
+<h3>🎯 Meta</h3>
+<p id="meta">0%</p>
 </div>
 
 </div>
 
-<h2 style="margin-top:30px;color:#D4AF37">Quadro de Obras</h2>
+<button onclick="novoCliente()">👥 Novo Cliente</button>
+<button onclick="novaEntrada()">💰 Nova Entrada</button>
+<button onclick="novaObra()">🪵 Nova Obra</button>
+<button onclick="recarregar()">🔄 Atualizar</button>
 
-<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
-
-<div style="background:#181818;padding:15px;border-radius:14px">
-<h3>📞 Lead</h3>
-<div id="lead"></div>
-</div>
-
-<div style="background:#181818;padding:15px;border-radius:14px">
-<h3>📐 Medição</h3>
-<div id="medicao"></div>
-</div>
-
-<div style="background:#181818;padding:15px;border-radius:14px">
-<h3>🧾 Orçamento</h3>
-<div id="orc"></div>
-</div>
-
-<div style="background:#181818;padding:15px;border-radius:14px">
-<h3>💰 Fechado</h3>
-<div id="fechado"></div>
-</div>
-
-<div style="background:#181818;padding:15px;border-radius:14px">
-<h3>🪵 Produção</h3>
-<div id="producao"></div>
-</div>
-
-<div style="background:#181818;padding:15px;border-radius:14px">
-<h3>🔧 Montagem</h3>
-<div id="montagem"></div>
-</div>
-
-<div style="background:#181818;padding:15px;border-radius:14px">
-<h3>✅ Entregue</h3>
-<div id="entregue"></div>
-</div>
-
-<div style="background:#181818;padding:15px;border-radius:14px">
-<h3>💵 Recebido</h3>
-<div id="recebido"></div>
-</div>
-
-</div>
-
-<div style="margin-top:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">
-
-<button onclick="novaObra()" style="padding:15px;background:#D4AF37;border:none;border-radius:12px">🪵 Nova Obra</button>
-
-<button onclick="novaEntrada()" style="padding:15px;background:#1a1a1a;color:#fff;border:none;border-radius:12px">💰 Entrada</button>
-
-<button onclick="alert('WhatsApp rápido ativo')" style="padding:15px;background:#1a1a1a;color:#fff;border:none;border-radius:12px">📲 WhatsApp</button>
-
+<div class="sec">
+<h2>Atividades</h2>
+<div id="lista"></div>
 </div>
 
 </div>
@@ -122,49 +79,74 @@ const supabase = window.supabase.createClient(
 'sb_publishable_05arcMnUYFrLB0xnBX0Upg_GPkSS2_u'
 );
 
-async function carregar(){
-let {data:o}=await supabase.from('orcamentos').select('*');
-let {data:f}=await supabase.from('financeiro').select('*');
+async function recarregar(){
+try{
 
-let caixa=0;
-f.forEach(i=> caixa += Number(i.valor||0));
-document.getElementById('caixa').innerText='R$ '+caixa.toFixed(2).replace('.',',');
+const {data:clientes=[]} = await supabase.from('clientes').select('*');
+const {data:financeiro=[]} = await supabase.from('financeiro').select('*');
+const {data:orcamentos=[]} = await supabase.from('orcamentos').select('*');
 
-let progresso=((caixa/80000)*100).toFixed(0);
-document.getElementById('progresso').innerText=progresso+'%';
+document.getElementById('clientes').innerText = clientes.length;
+document.getElementById('obras').innerText = orcamentos.length;
 
-let etapas=['lead','medicao','orc','fechado','producao','montagem','entregue','recebido'];
-etapas.forEach(e=>document.getElementById(e).innerHTML='');
+let total = 0;
+financeiro.forEach(i=> total += Number(i.valor || 0));
 
-o.forEach(item=>{
-let etapa=item.status||'lead';
-if(document.getElementById(etapa)){
-document.getElementById(etapa).innerHTML +=
-'<div style=\"background:#222;padding:10px;border-radius:10px;margin-bottom:8px\">'+
-'<b>'+item.cliente+'</b><br>R$ '+Number(item.valor||0).toFixed(2)+
-'</div>';
+document.getElementById('caixa').innerText =
+'R$ ' + total.toFixed(2).replace('.',',');
+
+let meta = ((total/80000)*100).toFixed(0);
+document.getElementById('meta').innerText = meta + '%';
+
+document.getElementById('lista').innerHTML =
+`
+<p>👥 Clientes cadastrados: ${clientes.length}</p>
+<p>💰 Movimentos financeiros: ${financeiro.length}</p>
+<p>🧾 Obras abertas: ${orcamentos.length}</p>
+`;
+
+}catch(e){
+alert("Erro ao carregar dados");
+console.log(e);
 }
-});
 }
 
-async function novaObra(){
-let c=prompt('Cliente');
-let v=prompt('Valor');
-if(c){
-await supabase.from('orcamentos').insert([{cliente:c,valor:v,status:'lead'}]);
-carregar();
-}
+async function novoCliente(){
+let nome = prompt("Nome do cliente");
+let tel = prompt("Telefone");
+if(!nome) return;
+
+await supabase.from('clientes').insert([
+{nome:nome, telefone:tel}
+]);
+
+recarregar();
 }
 
 async function novaEntrada(){
-let v=prompt('Valor entrada');
-if(v){
-await supabase.from('financeiro').insert([{tipo:'entrada',valor:v,descricao:'manual'}]);
-carregar();
-}
+let valor = prompt("Valor da entrada");
+if(!valor) return;
+
+await supabase.from('financeiro').insert([
+{tipo:'entrada', valor:valor, descricao:'manual'}
+]);
+
+recarregar();
 }
 
-carregar();
+async function novaObra(){
+let cliente = prompt("Cliente");
+let valor = prompt("Valor");
+if(!cliente) return;
+
+await supabase.from('orcamentos').insert([
+{cliente:cliente, valor:valor, status:'lead'}
+]);
+
+recarregar();
+}
+
+recarregar();
 </script>
 
 </body>
