@@ -120,10 +120,12 @@ document.getElementById(e).innerHTML="";
 });
 
 obras.forEach((o,i)=>{
+let mostrarValor = ["orcamento","fechado","producao","montagem","entregue"].includes(o.etapa);
+
 let html = `
 <div class="card">
 <b>${o.nome}</b><br>
-R$ ${Number(o.valor).toFixed(2)}<br>
+${mostrarValor ? "R$ " + Number(o.valor).toFixed(2) + "<br>" : ""}
 📞 ${o.tel}<br>
 
 <select onchange="mudar(${i}, this.value)">
