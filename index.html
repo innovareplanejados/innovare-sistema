@@ -3,119 +3,80 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Innovare Fase 6</title>
+<title>Innovare Master Real</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body style="margin:0;background:#050505;color:#fff;font-family:Arial;padding:20px">
 
-<h1 style="color:#D4AF37;font-size:34px">Innovare Planejados</h1>
-<p style="color:#bbb">Fase 6 • Automação Total</p>
+<h1 style="color:#D4AF37">Innovare Planejados</h1>
+<p>Banco de Dados Real ☁️</p>
 
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px;margin-top:20px">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
 
-<div style="background:#111;padding:20px;border-radius:16px">
-<h3>💰 Caixa</h3>
-<p id="saldo">R$ 0,00</p>
-</div>
+<button onclick="novoCliente()" style="padding:16px;background:#D4AF37;border:none;border-radius:12px">👥 Novo Cliente</button>
 
-<div style="background:#111;padding:20px;border-radius:16px">
-<h3>📅 Agenda</h3>
-<p id="qtdAgenda">0 compromissos</p>
-</div>
+<button onclick="novaEntrada()" style="padding:16px;background:#111;color:#fff;border:none;border-radius:12px">💰 Entrada</button>
 
-<div style="background:#111;padding:20px;border-radius:16px">
-<h3>🧾 Orçamentos</h3>
-<p id="qtdOrc">0 criados</p>
-</div>
+<button onclick="novoOrc()" style="padding:16px;background:#111;color:#fff;border:none;border-radius:12px">🧾 Orçamento</button>
 
-<div style="background:#111;padding:20px;border-radius:16px">
-<h3>⚠️ Contas</h3>
-<p id="qtdContas">0 pendentes</p>
-</div>
+<button onclick="novaAgenda()" style="padding:16px;background:#111;color:#fff;border:none;border-radius:12px">📅 Agenda</button>
 
 </div>
 
-<div style="margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
-
-<button onclick="entrada()" style="padding:16px;background:#D4AF37;border:none;border-radius:12px">💰 Entrada</button>
-
-<button onclick="saida()" style="padding:16px;background:#111;color:#fff;border:none;border-radius:12px">💸 Saída</button>
-
-<button onclick="orcamento()" style="padding:16px;background:#111;color:#fff;border:none;border-radius:12px">🧾 Novo Orçamento</button>
-
-<button onclick="agenda()" style="padding:16px;background:#111;color:#fff;border:none;border-radius:12px">📅 Agendar</button>
-
-<button onclick="cobranca()" style="padding:16px;background:#111;color:#fff;border:none;border-radius:12px">📲 Cobrança WhatsApp</button>
-
-<button onclick="conta()" style="padding:16px;background:#111;color:#fff;border:none;border-radius:12px">⚠️ Conta a Pagar</button>
-
-</div>
-
-<div style="background:#111;padding:20px;border-radius:16px;margin-top:20px">
-<h2>Histórico</h2>
-<div id="lista"></div>
+<div style="background:#111;padding:20px;border-radius:15px;margin-top:20px">
+<h2>Clientes Online</h2>
+<div id="clientes"></div>
 </div>
 
 <script>
-let saldo = Number(localStorage.getItem('saldo6')) || 0;
-let hist = JSON.parse(localStorage.getItem('hist6')) || [];
-let ag = Number(localStorage.getItem('ag6')) || 0;
-let orc = Number(localStorage.getItem('orc6')) || 0;
-let cont = Number(localStorage.getItem('cont6')) || 0;
+const supabase = window.supabase.createClient(
+'https://ckmotdxrdscateoftboi.supabase.co',
+'sb_publishable_05arcMnUYFrLB0xnBX0Upg_GPkSS2_u'
+);
 
-function salvar(){
-localStorage.setItem('saldo6',saldo);
-localStorage.setItem('hist6',JSON.stringify(hist));
-localStorage.setItem('ag6',ag);
-localStorage.setItem('orc6',orc);
-localStorage.setItem('cont6',cont);
+async function carregar(){
+let {data} = await supabase.from('clientes').select('*').order('id',{ascending:false});
+document.getElementById('clientes').innerHTML =
+data.map(c=>'<p>👤 '+c.nome+' - '+(c.telefone||'')+'</p>').join('');
 }
 
-function moeda(v){
-return 'R$ '+v.toFixed(2).replace('.',',');
+async function novoCliente(){
+let nome = prompt('Nome cliente');
+let tel = prompt('Telefone');
+if(nome){
+await supabase.from('clientes').insert([{nome:nome,telefone:tel}]);
+carregar();
+}
 }
 
-function render(){
-document.getElementById('saldo').innerText = moeda(saldo);
-document.getElementById('qtdAgenda').innerText = ag+' compromissos';
-document.getElementById('qtdOrc').innerText = orc+' criados';
-document.getElementById('qtdContas').innerText = cont+' pendentes';
-document.getElementById('lista').innerHTML = hist.map(i=>'<p>'+i+'</p>').join('');
-salvar();
+async function novaEntrada(){
+let valor = prompt('Valor entrada');
+if(valor){
+await supabase.from('financeiro').insert([{tipo:'entrada',valor:valor,descricao:'manual'}]);
+alert('Entrada salva');
+}
 }
 
-function entrada(){
-let v = Number(prompt('Valor da entrada'));
-if(v){saldo+=v;hist.unshift('💰 Entrada '+moeda(v));render();}
+async function novoOrc(){
+let cli = prompt('Cliente');
+let val = prompt('Valor');
+if(cli){
+await supabase.from('orcamentos').insert([{cliente:cli,valor:val,status:'aberto'}]);
+alert('Orçamento salvo');
+}
 }
 
-function saida(){
-let v = Number(prompt('Valor da saída'));
-if(v){saldo-=v;hist.unshift('💸 Saída '+moeda(v));render();}
-}
-
-function orcamento(){
-let nome = prompt('Nome do cliente');
-let v = prompt('Valor orçamento');
-if(nome){orc++;hist.unshift('🧾 Orçamento '+nome+' '+moeda(Number(v||0)));render();}
-}
-
-function agenda(){
+async function novaAgenda(){
 let t = prompt('Compromisso');
-if(t){ag++;hist.unshift('📅 '+t);render();}
+let d = prompt('Data');
+if(t){
+await supabase.from('agenda').insert([{titulo:t,data:d}]);
+alert('Agenda salva');
+}
 }
 
-function conta(){
-let t = prompt('Conta a pagar');
-if(t){cont++;hist.unshift('⚠️ '+t);render();}
-}
-
-function cobranca(){
-let msg = encodeURIComponent('Olá, passando para lembrar do pagamento pendente. Innovare Planejados.');
-window.open('https://wa.me/55?text='+msg,'_blank');
-}
-
-render();
+carregar();
 </script>
 
 </body>
