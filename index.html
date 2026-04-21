@@ -13,29 +13,8 @@ color:#fff;
 font-family:Arial;
 padding:12px;
 }
-
-h1{color:#D4AF37}
-
-.board{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-gap:12px;
-}
-
-.col{
-background:#181818;
-padding:10px;
-border-radius:14px;
-min-height:260px;
-}
-
-.card{
-background:#222;
-padding:10px;
-border-radius:10px;
-margin-bottom:8px;
-touch-action:none;
-}
+h1{color:#D4AF37;margin:0 0 6px}
+.sub{color:#bbb;margin:0 0 14px}
 
 button{
 width:100%;
@@ -45,23 +24,82 @@ border-radius:12px;
 background:#D4AF37;
 font-weight:bold;
 margin-bottom:12px;
+cursor:pointer;
+}
+
+.board{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:12px;
+margin-bottom:18px;
+}
+
+.col{
+background:#181818;
+padding:10px;
+border-radius:14px;
+min-height:240px;
+}
+
+.card{
+background:#222;
+padding:10px;
+border-radius:10px;
+margin-bottom:8px;
+font-size:14px;
+touch-action:none;
+}
+
+select{
+width:100%;
+margin-top:6px;
+padding:8px;
+border-radius:8px;
+border:none;
 }
 
 .drop{
 outline:2px dashed #D4AF37;
 }
+
+.section{
+background:#181818;
+padding:12px;
+border-radius:14px;
+margin-top:10px;
+}
+
+.calendar{
+display:grid;
+grid-template-columns:repeat(7,1fr);
+gap:8px;
+margin-top:10px;
+}
+
+.day{
+background:#222;
+border-radius:10px;
+padding:8px;
+min-height:90px;
+font-size:12px;
+}
+
+.tagM{display:block;background:#1e3a8a;padding:4px;border-radius:6px;margin-top:4px}
+.tagT{display:block;background:#D4AF37;color:#000;padding:4px;border-radius:6px;margin-top:4px}
+.tagA{display:block;background:#991b1b;padding:4px;border-radius:6px;margin-top:4px}
+small{color:#bbb}
 </style>
 </head>
 
 <body>
 
 <h1>Innovare Planejados</h1>
-<p>Arrastar com dedo</p>
+<p class="sub">Quadro + Agenda Visual</p>
 
 <button onclick="novaObra()">🪵 Nova Obra</button>
+<button onclick="novoEvento()">📅 Novo Compromisso</button>
 
 <div class="board">
-
 <div class="col" data-etapa="lead"><h3>📞 Lead</h3><div id="lead"></div></div>
 <div class="col" data-etapa="medicao"><h3>📐 Medição</h3><div id="medicao"></div></div>
 <div class="col" data-etapa="orcamento"><h3>🧾 Orçamento</h3><div id="orcamento"></div></div>
@@ -69,81 +107,137 @@ outline:2px dashed #D4AF37;
 <div class="col" data-etapa="producao"><h3>🪵 Produção</h3><div id="producao"></div></div>
 <div class="col" data-etapa="montagem"><h3>🔧 Montagem</h3><div id="montagem"></div></div>
 <div class="col" data-etapa="entregue"><h3>✅ Entregue</h3><div id="entregue"></div></div>
+</div>
 
+<div class="section">
+<h2 style="margin:0">📅 Agenda da Semana</h2>
+<div class="calendar" id="agenda"></div>
 </div>
 
 <script>
 let obras = JSON.parse(localStorage.getItem("obras")) || [];
+let agenda = JSON.parse(localStorage.getItem("agenda")) || [];
 let atual = null;
 
 const etapas = ["lead","medicao","orcamento","fechado","producao","montagem","entregue"];
+const mobile = /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);
 
 function salvar(){
 localStorage.setItem("obras", JSON.stringify(obras));
+localStorage.setItem("agenda", JSON.stringify(agenda));
 }
 
-function render(){
-
-etapas.forEach(e=>{
-document.getElementById(e).innerHTML="";
-});
+function renderBoard(){
+etapas.forEach(e=>document.getElementById(e).innerHTML="");
 
 obras.forEach((o,i)=>{
-
 let div = document.createElement("div");
 div.className="card";
-div.innerHTML = `
-<b>${o.nome}</b><br>
-📞 ${o.tel}<br>
-R$ ${Number(o.valor).toFixed(2)}
-`;
 
+let html = "<b>"+o.nome+"</b><br>";
+
+if(o.etapa==="lead" || o.etapa==="medicao"){
+html += "📞 "+o.tel;
+}else if(o.etapa==="orcamento"){
+html += "R$ "+Number(o.valor).toFixed(2)+"<br>📅 "+o.data+"<br>🔥 "+o.prioridade;
+}else{
+html += "R$ "+Number(o.valor).toFixed(2)+"<br>📞 "+o.tel+"<br>📅 "+o.data+"<br>💵 Pago R$ "+Number(o.pago).toFixed(2);
+}
+
+div.innerHTML = html;
+
+if(mobile){
 div.ontouchstart = ()=> atual=i;
+}else{
+let sel = document.createElement("select");
+sel.innerHTML = etapas.map(et=>'<option value="'+et+'" '+(o.etapa===et?'selected':'')+'>'+et+'</option>').join("");
+sel.onchange = ()=>{ obras[i].etapa = sel.value; renderAll(); };
+div.appendChild(sel);
+}
 
 document.getElementById(o.etapa).appendChild(div);
-
 });
 
+if(mobile){
+document.querySelectorAll(".col").forEach(col=>{
+col.ontouchmove = function(){ this.classList.add("drop"); };
+col.ontouchend = function(){
+this.classList.remove("drop");
+if(atual!==null){
+obras[atual].etapa = this.dataset.etapa;
+atual = null;
+renderAll();
+}
+}
+});
+}
+}
+
+function renderAgenda(){
+const dias = ["Seg","Ter","Qua","Qui","Sex","Sab","Dom"];
+let html = "";
+
+for(let i=0;i<7;i++){
+html += '<div class="day"><b>'+dias[i]+'</b><br><small>'+(i+1)+'</small>';
+
+agenda.filter(e=>Number(e.dia)===i+1).forEach(ev=>{
+let cls = ev.tipo==="medicao" ? "tagM" : "tagT";
+if(ev.atrasado) cls = "tagA";
+html += '<span class="'+cls+'">'+ev.hora+' '+ev.nome+'</span>';
+});
+
+html += '</div>';
+}
+
+document.getElementById("agenda").innerHTML = html;
+}
+
+function renderAll(){
+renderBoard();
+renderAgenda();
 salvar();
 }
 
-document.querySelectorAll(".col").forEach(col=>{
-
-col.ontouchmove = function(){
-this.classList.add("drop");
-}
-
-col.ontouchend = function(){
-this.classList.remove("drop");
-
-if(atual!==null){
-obras[atual].etapa = this.dataset.etapa;
-render();
-atual=null;
-}
-}
-
-});
-
 function novaObra(){
-
 let nome = prompt("Nome cliente:");
-if(!nome)return;
-
+if(!nome) return;
 let tel = prompt("Telefone:");
 let valor = prompt("Valor:");
+let pago = prompt("Entrada paga:");
+let data = prompt("Data entrega:");
 
 obras.push({
 nome:nome,
 tel:tel||"",
 valor:valor||0,
+pago:pago||0,
+data:data||"-",
+prioridade:"média",
 etapa:"lead"
 });
 
-render();
+renderAll();
 }
 
-render();
+function novoEvento(){
+let tipo = prompt("Tipo: medicao ou montagem");
+if(!tipo) return;
+let nome = prompt("Cliente:");
+let dia = prompt("Dia semana: 1 Seg até 7 Dom");
+let hora = prompt("Hora:");
+
+agenda.push({
+tipo:tipo.toLowerCase(),
+nome:nome||"",
+dia:dia||1,
+hora:hora||"09:00",
+atrasado:false
+});
+
+renderAll();
+}
+
+renderAll();
 </script>
 
 </body>
