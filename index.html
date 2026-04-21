@@ -24,13 +24,15 @@ font-weight:bold;color:#000;cursor:pointer;width:100%
 .thumb{width:56px;height:56px;object-fit:cover;border-radius:8px;margin:4px;cursor:pointer}
 input,select{width:100%;padding:8px;margin-top:6px;border:none;border-radius:8px}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;z-index:99}
-.modal img{max-width:95%;max-height:90vh;border-radius:12px}
-.close{position:absolute;top:15px;right:15px;background:#D4AF37;color:#000;padding:10px;border-radius:10px;font-weight:bold}
+.close{position:absolute;top:15px;right:15px;background:#D4AF37;color:#000;padding:10px;border-radius:10px;font-weight:bold;cursor:pointer}
 .day{background:#222;padding:8px;border-radius:10px;min-height:90px}
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
 small{color:#bbb}
 .tag1{display:block;background:#1e40af;padding:4px;border-radius:6px;margin-top:4px}
 .tag2{display:block;background:#D4AF37;color:#000;padding:4px;border-radius:6px;margin-top:4px}
+#fotoWrap{position:relative;max-width:95vw;max-height:90vh}
+#imgGrande{max-width:95vw;max-height:90vh;display:block;border-radius:12px}
+#camadaMedidas{position:absolute;left:0;top:0;width:100%;height:100%}
 </style>
 </head>
 <body>
@@ -66,10 +68,10 @@ small{color:#bbb}
 
 <div id="dash" class="page">
 <div class="grid">
-<div class="box"><h3>👥 Clientes</h3><p id="d1">0</p></div>
-<div class="box"><h3>🪵 Obras</h3><p id="d2">0</p></div>
-<div class="box"><h3>💰 Total</h3><p id="d3">R$ 0</p></div>
-<div class="box"><h3>📅 Eventos</h3><p id="d4">0</p></div>
+<div class="box"><h3>👥 Obras</h3><p id="d1">0</p></div>
+<div class="box"><h3>💰 Total</h3><p id="d2">R$ 0</p></div>
+<div class="box"><h3>📅 Eventos</h3><p id="d3">0</p></div>
+<div class="box"><h3>📸 Fotos</h3><p id="d4">0</p></div>
 </div>
 </div>
 
@@ -77,19 +79,31 @@ small{color:#bbb}
 <div id="galeria"></div>
 </div>
 
-<div class="modal" id="modal" onclick="fecharFoto()">
-<div class="close">X</div>
+<div class="modal" id="modal">
+<div class="close" onclick="fecharFoto()">X</div>
+
+<div id="fotoWrap">
 <img id="imgGrande">
+<svg id="camadaMedidas"></svg>
+</div>
+
+<div style="position:fixed;bottom:20px;left:20px;right:20px">
+<button class="btn" onclick="modoMedida()">📏 Adicionar Medida</button>
+</div>
 </div>
 
 <script>
 let obras=JSON.parse(localStorage.getItem("obras"))||[];
 let agenda=JSON.parse(localStorage.getItem("agenda"))||[];
+let medidas=JSON.parse(localStorage.getItem("medidas"))||{};
+let medindo=false,p1=null,fotoAtual="";
+
 const etapas=["lead","medicao","orcamento","fechado","producao","montagem","entregue"];
 
 function salvar(){
 localStorage.setItem("obras",JSON.stringify(obras));
 localStorage.setItem("agenda",JSON.stringify(agenda));
+localStorage.setItem("medidas",JSON.stringify(medidas));
 }
 
 function abrir(id){
@@ -115,16 +129,12 @@ if(!o.fotos)o.fotos=[];
 let html='<div class="card"><b>'+o.nome+'</b><br>📞 '+o.tel+'<br>R$ '+Number(o.valor).toFixed(2);
 
 html+='<select onchange="mudar('+i+',this.value)">';
-etapas.forEach(et=>{
-html+='<option value="'+et+'" '+(o.etapa==et?'selected':'')+'>'+et+'</option>';
-});
+etapas.forEach(et=>html+='<option value="'+et+'" '+(o.etapa==et?'selected':'')+'>'+et+'</option>');
 html+='</select>';
 
 html+='<input type="file" accept="image/*" onchange="foto('+i+',this)">';
 
-o.fotos.forEach(f=>{
-html+='<img src="'+f+'" class="thumb" onclick="abrirFoto(\''+f+'\')">';
-});
+o.fotos.forEach(f=>html+='<img src="'+f+'" class="thumb" onclick="abrirFoto(\''+f+'\')">');
 
 html+='</div>';
 
@@ -146,20 +156,22 @@ document.getElementById("cal").innerHTML=html;
 }
 
 function renderDash(){
+let total=0,fotos=0;
+obras.forEach(o=>{
+total+=Number(o.valor||0);
+if(o.fotos) fotos+=o.fotos.length;
+});
 document.getElementById("d1").innerText=obras.length;
-document.getElementById("d2").innerText=obras.length;
-let total=0;obras.forEach(o=>total+=Number(o.valor||0));
-document.getElementById("d3").innerText="R$ "+total.toFixed(2);
-document.getElementById("d4").innerText=agenda.length;
+document.getElementById("d2").innerText="R$ "+total.toFixed(2);
+document.getElementById("d3").innerText=agenda.length;
+document.getElementById("d4").innerText=fotos;
 }
 
 function renderFotos(){
 let html="";
 obras.forEach(o=>{
 if(o.fotos){
-o.fotos.forEach(f=>{
-html+='<img src="'+f+'" class="thumb" onclick="abrirFoto(\''+f+'\')">';
-});
+o.fotos.forEach(f=>html+='<img src="'+f+'" class="thumb" onclick="abrirFoto(\''+f+'\')">');
 }
 });
 document.getElementById("galeria").innerHTML=html||"Sem fotos";
@@ -174,25 +186,21 @@ obras.push({nome,tel:tel||"",valor:valor||0,etapa:"lead",fotos:[]});
 render();
 }
 
-function mudar(i,v){
-obras[i].etapa=v;
-render();
-}
+function mudar(i,v){obras[i].etapa=v;render();}
 
 function foto(i,input){
 let file=input.files[0];
 if(!file)return;
 let r=new FileReader();
-r.onload=e=>{
-obras[i].fotos.push(e.target.result);
-render();
-}
+r.onload=e=>{obras[i].fotos.push(e.target.result);render();}
 r.readAsDataURL(file);
 }
 
 function abrirFoto(src){
+fotoAtual=src;
 document.getElementById("imgGrande").src=src;
 document.getElementById("modal").style.display="flex";
+setTimeout(desenharMedidas,100);
 }
 
 function fecharFoto(){
@@ -207,6 +215,49 @@ let dia=prompt("Dia semana 1 a 7");
 let hora=prompt("Hora:");
 agenda.push({tipo,nome,dia,hora});
 render();
+}
+
+function modoMedida(){
+medindo=true;
+p1=null;
+alert("Toque dois pontos na foto");
+}
+
+document.getElementById("imgGrande").onclick=function(e){
+if(!medindo)return;
+
+let rect=this.getBoundingClientRect();
+let x=e.clientX-rect.left;
+let y=e.clientY-rect.top;
+
+if(!p1){p1={x,y};return;}
+
+let p2={x,y};
+let txt=prompt("Digite medida (ex: 2,45 m)");
+if(!txt){medindo=false;p1=null;return;}
+
+if(!medidas[fotoAtual]) medidas[fotoAtual]=[];
+medidas[fotoAtual].push({p1,p2,txt});
+
+medindo=false;
+p1=null;
+desenharMedidas();
+salvar();
+};
+
+function desenharMedidas(){
+let svg=document.getElementById("camadaMedidas");
+svg.innerHTML="";
+if(!medidas[fotoAtual]) return;
+
+medidas[fotoAtual].forEach(m=>{
+svg.innerHTML+=`
+<line x1="${m.p1.x}" y1="${m.p1.y}" x2="${m.p2.x}" y2="${m.p2.y}"
+stroke="#D4AF37" stroke-width="3"/>
+<text x="${(m.p1.x+m.p2.x)/2}" y="${(m.p1.y+m.p2.y)/2-8}"
+fill="#D4AF37" font-size="18" text-anchor="middle">${m.txt}</text>
+`;
+});
 }
 
 render();
