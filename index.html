@@ -3,47 +3,48 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Innovare ERP</title>
+<title>Innovare Black Label</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
-<body style="margin:0;background:#080808;color:#fff;font-family:Arial">
+<body style="margin:0;background:#060606;color:#fff;font-family:Arial">
 
-<div style="width:240px;height:100vh;background:#111;position:fixed;padding:20px;box-sizing:border-box">
+<div style="width:250px;height:100vh;background:#111;position:fixed;padding:22px;box-sizing:border-box">
 <h2 style="color:#D4AF37">Innovare ERP</h2>
 <p>🏠 Dashboard</p>
-<p>👥 Clientes</p>
+<p>👥 CRM Clientes</p>
 <p>🧾 Comercial</p>
 <p>💰 Financeiro</p>
 <p>📦 Estoque</p>
 <p>🪵 Produção</p>
 <p>📅 Agenda</p>
+<p>👥 Equipe</p>
 <p>⚙️ Configurações</p>
 </div>
 
-<div style="margin-left:240px;padding:20px">
+<div style="margin-left:250px;padding:24px">
 
-<h1 style="color:#D4AF37">ERP Industrial Profissional</h1>
-<p style="color:#aaa">Gestão Total da Marcenaria</p>
+<h1 style="color:#D4AF37">Black Label Corporativo Elite</h1>
+<p style="color:#aaa">Plataforma Executiva Innovare</p>
 
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px;margin-top:20px">
 
-<div style="background:#161616;padding:20px;border-radius:14px">
-<h3>💰 Caixa</h3>
-<p id="caixa">R$ 0,00</p>
+<div style="background:#171717;padding:20px;border-radius:16px">
+<h3>💰 Receita</h3>
+<p id="receita">R$ 0,00</p>
 </div>
 
-<div style="background:#161616;padding:20px;border-radius:14px">
+<div style="background:#171717;padding:20px;border-radius:16px">
 <h3>👥 Clientes</h3>
 <p id="clientes">0</p>
 </div>
 
-<div style="background:#161616;padding:20px;border-radius:14px">
+<div style="background:#171717;padding:20px;border-radius:16px">
 <h3>🧾 Orçamentos</h3>
 <p id="orc">0</p>
 </div>
 
-<div style="background:#161616;padding:20px;border-radius:14px">
+<div style="background:#171717;padding:20px;border-radius:16px">
 <h3>📅 Agenda</h3>
 <p id="agenda">0</p>
 </div>
@@ -52,22 +53,22 @@
 
 <div style="margin-top:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">
 
-<button onclick="novoCliente()" style="padding:15px;background:#D4AF37;border:none;border-radius:12px">👥 Cliente</button>
+<button onclick="novoCliente()" style="padding:15px;background:#D4AF37;border:none;border-radius:12px">👥 Novo Cliente</button>
 
-<button onclick="entrada()" style="padding:15px;background:#1a1a1a;color:#fff;border:none;border-radius:12px">💰 Entrada</button>
+<button onclick="novaEntrada()" style="padding:15px;background:#1c1c1c;color:#fff;border:none;border-radius:12px">💰 Receita</button>
 
-<button onclick="orcamento()" style="padding:15px;background:#1a1a1a;color:#fff;border:none;border-radius:12px">🧾 Orçamento</button>
+<button onclick="novoOrc()" style="padding:15px;background:#1c1c1c;color:#fff;border:none;border-radius:12px">🧾 Orçamento</button>
 
-<button onclick="estoque()" style="padding:15px;background:#1a1a1a;color:#fff;border:none;border-radius:12px">📦 Estoque</button>
+<button onclick="novaAgenda()" style="padding:15px;background:#1c1c1c;color:#fff;border:none;border-radius:12px">📅 Agenda</button>
 
-<button onclick="producao()" style="padding:15px;background:#1a1a1a;color:#fff;border:none;border-radius:12px">🪵 Produção</button>
+<button onclick="pdf()" style="padding:15px;background:#1c1c1c;color:#fff;border:none;border-radius:12px">📄 PDF</button>
 
-<button onclick="agendaNova()" style="padding:15px;background:#1a1a1a;color:#fff;border:none;border-radius:12px">📅 Agenda</button>
+<button onclick="app()" style="padding:15px;background:#1c1c1c;color:#fff;border:none;border-radius:12px">📱 App</button>
 
 </div>
 
-<div style="background:#161616;padding:20px;border-radius:14px;margin-top:20px">
-<h2>Atividades</h2>
+<div style="background:#171717;padding:20px;border-radius:16px;margin-top:20px">
+<h2>Indicadores Elite</h2>
 <div id="lista"></div>
 </div>
 
@@ -91,45 +92,45 @@ document.getElementById('agenda').innerText=a.length;
 
 let total=0;
 f.forEach(i=> total += Number(i.valor||0));
-document.getElementById('caixa').innerText='R$ '+total.toFixed(2).replace('.',',');
+document.getElementById('receita').innerText='R$ '+total.toFixed(2).replace('.',',');
 
 document.getElementById('lista').innerHTML =
 [
-'👥 Clientes cadastrados: '+c.length,
-'💰 Movimentos financeiros: '+f.length,
-'🧾 Orçamentos emitidos: '+o.length,
-'📅 Compromissos: '+a.length
+'📈 Crescimento mensal ativo',
+'💎 Ticket médio premium',
+'🏆 Plataforma Black Label',
+'👥 Base clientes: '+c.length
 ].map(i=>'<p>'+i+'</p>').join('');
 }
 
 async function novoCliente(){
-let n=prompt('Nome cliente');
+let n=prompt('Nome');
 let t=prompt('Telefone');
 if(n){await supabase.from('clientes').insert([{nome:n,telefone:t}]);carregar();}
 }
 
-async function entrada(){
-let v=prompt('Valor entrada');
-if(v){await supabase.from('financeiro').insert([{tipo:'entrada',valor:v,descricao:'manual'}]);carregar();}
+async function novaEntrada(){
+let v=prompt('Valor');
+if(v){await supabase.from('financeiro').insert([{tipo:'entrada',valor:v,descricao:'receita'}]);carregar();}
 }
 
-async function orcamento(){
+async function novoOrc(){
 let c=prompt('Cliente');
 let v=prompt('Valor');
 if(c){await supabase.from('orcamentos').insert([{cliente:c,valor:v,status:'aberto'}]);carregar();}
 }
 
-function estoque(){
-alert('Módulo estoque pronto para próxima fase.');
-}
-
-function producao(){
-alert('Módulo produção pronto para próxima fase.');
-}
-
-async function agendaNova(){
+async function novaAgenda(){
 let t=prompt('Compromisso');
 if(t){await supabase.from('agenda').insert([{titulo:t,data:'pendente'}]);carregar();}
+}
+
+function pdf(){
+alert('PDF profissional pronto para próxima integração.');
+}
+
+function app(){
+alert('Aplicativo instalável pronto para próxima fase.');
 }
 
 carregar();
